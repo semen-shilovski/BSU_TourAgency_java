@@ -45,4 +45,10 @@ public class TravelAgencyService {
                 .toList();
     }
 
+    public List<Tour> getToursByClient(Integer clientId) {
+        return getTours().stream()
+                .filter(tour -> tour.getClient().getId().equals(clientId))
+                .toList();
+    }
+
 }

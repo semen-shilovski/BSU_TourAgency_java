@@ -3,6 +3,7 @@ package services;
 import models.Client;
 import models.interfaces.Dao;
 
+import java.util.List;
 import java.util.Objects;
 
 public class ClientService {
@@ -14,5 +15,9 @@ public class ClientService {
 
     public Client searchClientById(Integer id) {
         return clientDao.getById(id).orElse(null);
+    }
+
+    public List<Client> getAllClients() {
+        return clientDao.getAll();
     }
 }

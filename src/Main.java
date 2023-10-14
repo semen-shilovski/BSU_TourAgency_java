@@ -20,6 +20,8 @@ public class Main {
         strategies.put(4, new SearchTourByNameStrategy());
         strategies.put(5, new GetAllLastMinuteToursStrategy());
         strategies.put(6, new GetAllToursStrategy());
+        strategies.put(7, new GetToursByClientStrategy());
+        strategies.put(8, new GetAllClientsStrategy());
 
         while (!exit) {
             System.out.println("Выберите действие:");
@@ -29,14 +31,16 @@ public class Main {
             System.out.println("4. Поиск тура по имени");
             System.out.println("5. Показать горящие туры");
             System.out.println("6. Вывести все туры");
-            System.out.println("7. Выйти");
+            System.out.println("7. Поиск туров по клиенту");
+            System.out.println("8. Список клиентов");
+            System.out.println("9. Выйти");
 
             int choice = scanner.nextInt();
             scanner.nextLine();
 
             if (strategies.containsKey(choice)) {
                 strategies.get(choice).execute(travelAgencyService, scanner);
-            } else if (choice == 7) {
+            } else if (choice == 9) {
                 exit = true;
             } else {
                 System.out.println("Неверный выбор. Пожалуйста, выберите действие из списка.");

@@ -1,11 +1,10 @@
 package services;
 
 import models.Client;
-import models.Tour;
-import models.TourAgent;
 import models.interfaces.Dao;
 
 import java.sql.*;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -15,6 +14,10 @@ public class ClientDao implements Dao<Client> {
               FROM client cl
             where cl.id = ?
              """;
+
+    private static final String SELECT_ALL_TOURS_SQL = """
+                SELECT * FROM client
+            """;
 
     @Override
     public Optional<Client> getByName(String name) {
@@ -48,7 +51,15 @@ public class ClientDao implements Dao<Client> {
 
     @Override
     public List<Client> getAll() {
-        return null;
+        List<Client> clients = new ArrayList<>();
+        try (Connection connection = JdbcConnector.getConnection();
+             Statement statement = connection.createStatement();
+             ResultSet resultSet = statement.executeQuery(SELECT_ALL_TOURS_SQL)) {
+            while (resultSet.next()) clients.add(mapClientFromResultSet(resultSet));
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return clients;
     }
 
     @Override
