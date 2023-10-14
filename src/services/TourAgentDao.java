@@ -8,6 +8,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import static services.ConnectionPool.getConnection;
+import static services.ConnectionPool.releaseConnection;
+
 public class TourAgentDao implements Dao<TourAgent> {
 
     private static final String SELECT_BY_ID = """
@@ -28,8 +31,13 @@ public class TourAgentDao implements Dao<TourAgent> {
 
     @Override
     public Optional<TourAgent> getById(Integer id) {
-        try (Connection connection = JdbcConnector.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(SELECT_BY_ID)) {
+        Connection connection = null;
+        try {
+            connection = getConnection();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        try (PreparedStatement preparedStatement = connection.prepareStatement(SELECT_BY_ID)) {
             preparedStatement.setInt(1, id);
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
                 if (resultSet.next()) {
@@ -38,6 +46,8 @@ public class TourAgentDao implements Dao<TourAgent> {
             }
         } catch (SQLException e) {
             e.printStackTrace();
+        } finally {
+            releaseConnection(connection);
         }
         return Optional.empty();
     }
@@ -52,50 +62,78 @@ public class TourAgentDao implements Dao<TourAgent> {
 
     @Override
     public List<TourAgent> getAll() {
+        Connection connection = null;
+        try {
+            connection = getConnection();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
         List<TourAgent> tourAgents = new ArrayList<>();
-        try (Connection connection = JdbcConnector.getConnection();
-             Statement statement = connection.createStatement();
+        try (Statement statement = connection.createStatement();
              ResultSet resultSet = statement.executeQuery(SELECT_ALL_TOUR_AGENT_SQL)) {
             while (resultSet.next()) tourAgents.add(mapTourAgentFromResultSet(resultSet));
         } catch (SQLException e) {
             e.printStackTrace();
+        } finally {
+            releaseConnection(connection);
         }
         return tourAgents;
     }
 
     @Override
     public void save(TourAgent tourAgent) {
-        try (Connection connection = JdbcConnector.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(INSERT_TOUR_AGENT_SQL)) {
+        Connection connection = null;
+        try {
+            connection = getConnection();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        try (PreparedStatement preparedStatement = connection.prepareStatement(INSERT_TOUR_AGENT_SQL)) {
             preparedStatement.setString(1, tourAgent.getName());
             preparedStatement.setString(2, tourAgent.getPhoneNumber());
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
+        } finally {
+            releaseConnection(connection);
         }
     }
 
     @Override
     public void update(TourAgent tourAgent) {
-        try (Connection connection = JdbcConnector.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(UPDATE_TOUR_AGENT_BY_NAME)) {
+        Connection connection = null;
+        try {
+            connection = getConnection();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        try (PreparedStatement preparedStatement = connection.prepareStatement(UPDATE_TOUR_AGENT_BY_NAME)) {
             preparedStatement.setString(1, tourAgent.getName());
             preparedStatement.setString(2, tourAgent.getPhoneNumber());
             preparedStatement.setString(3, tourAgent.getName());
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
+        } finally {
+            releaseConnection(connection);
         }
     }
 
     @Override
     public void delete(TourAgent tourAgent) {
-        try (Connection connection = JdbcConnector.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(DELETE_BY_NAME)) {
+        Connection connection = null;
+        try {
+            connection = getConnection();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        try (PreparedStatement preparedStatement = connection.prepareStatement(DELETE_BY_NAME)) {
             preparedStatement.setString(1, tourAgent.getName());
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
+        } finally {
+            releaseConnection(connection);
         }
     }
 }

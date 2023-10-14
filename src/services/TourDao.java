@@ -10,6 +10,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import static services.ConnectionPool.getConnection;
+import static services.ConnectionPool.releaseConnection;
+
 public class TourDao implements Dao<Tour> {
     private static final String INSERT_TOUR_SQL = "INSERT INTO tours (name, type, price, is_last_minute, discount, client_id, tour_agent_id) VALUES (?, ?, ?, ?, ?, ?, ?)";
     private static final String SELECT_ALL_TOURS_SQL = """
@@ -25,8 +28,13 @@ public class TourDao implements Dao<Tour> {
 
 
     public Optional<Tour> getByName(String name) {
-        try (Connection connection = JdbcConnector.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(SELECT_BY_NAME)) {
+        Connection connection = null;
+        try {
+            connection = getConnection();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        try (PreparedStatement preparedStatement = connection.prepareStatement(SELECT_BY_NAME)) {
             preparedStatement.setString(1, name);
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
                 if (resultSet.next()) {
@@ -35,6 +43,8 @@ public class TourDao implements Dao<Tour> {
             }
         } catch (SQLException e) {
             e.printStackTrace();
+        } finally {
+            releaseConnection(connection);
         }
         return Optional.empty();
     }
@@ -46,13 +56,20 @@ public class TourDao implements Dao<Tour> {
 
     @Override
     public List<Tour> getAll() {
+        Connection connection = null;
+        try {
+            connection = getConnection();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
         List<Tour> tours = new ArrayList<>();
-        try (Connection connection = JdbcConnector.getConnection();
-             Statement statement = connection.createStatement();
+        try (Statement statement = connection.createStatement();
              ResultSet resultSet = statement.executeQuery(SELECT_ALL_TOURS_SQL)) {
             while (resultSet.next()) tours.add(mapTourFromResultSet(resultSet));
         } catch (SQLException e) {
             e.printStackTrace();
+        } finally {
+            releaseConnection(connection);
         }
         return tours;
     }
@@ -76,8 +93,13 @@ public class TourDao implements Dao<Tour> {
 
     @Override
     public void save(Tour tour) {
-        try (Connection connection = JdbcConnector.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(INSERT_TOUR_SQL)) {
+        Connection connection = null;
+        try {
+            connection = getConnection();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        try (PreparedStatement preparedStatement = connection.prepareStatement(INSERT_TOUR_SQL)) {
             preparedStatement.setString(1, tour.getName());
             preparedStatement.setString(2, tour.getType());
             preparedStatement.setDouble(3, tour.getPrice());
@@ -88,13 +110,20 @@ public class TourDao implements Dao<Tour> {
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
+        } finally {
+            releaseConnection(connection);
         }
     }
 
     @Override
     public void update(Tour tour) {
-        try (Connection connection = JdbcConnector.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(UPDATE_TOUR_BY_NAME)) {
+        Connection connection = null;
+        try {
+            connection = getConnection();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        try (PreparedStatement preparedStatement = connection.prepareStatement(UPDATE_TOUR_BY_NAME)) {
             preparedStatement.setString(1, tour.getName());
             preparedStatement.setString(2, tour.getType());
             preparedStatement.setDouble(3, tour.getPrice());
@@ -106,18 +135,27 @@ public class TourDao implements Dao<Tour> {
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
+        } finally {
+            releaseConnection(connection);
         }
     }
 
     @Override
     public void delete(Tour tour) {
-        try (Connection connection = JdbcConnector.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(DELETE_BY_NAME)) {
+        Connection connection = null;
+        try {
+            connection = getConnection();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        try (PreparedStatement preparedStatement = connection.prepareStatement(DELETE_BY_NAME)) {
             preparedStatement.setString(1, tour.getName());
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
             System.out.println(e.getErrorCode());
             e.printStackTrace();
+        } finally {
+            releaseConnection(connection);
         }
     }
 }

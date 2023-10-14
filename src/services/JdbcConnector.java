@@ -1,3 +1,4 @@
+/*
 package services;
 
 import java.io.FileInputStream;
@@ -26,3 +27,4 @@ public class JdbcConnector {
         return DriverManager.getConnection(dbUrl, dbUser, dbPassword);
     }
 }
+*/
