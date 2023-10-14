@@ -38,8 +38,11 @@ public class AddTourStrategy implements TourStrategy {
             System.out.println("\u001B[31mДанного тур-агента не существует\u001B[0m \n");
             return;
         }
-        System.out.println("Введите скидку для постоянных клиентов (если нет, введите 0):");
-        double discountForRegularCustomers = scanner.nextDouble();
+        double discountForRegularCustomers = 0;
+        if ((long) travelAgencyService.getToursByClient(clientId).size() > 5) {
+            System.out.println("Введите скидку для постоянных клиентов (если нет, введите 0):");
+            discountForRegularCustomers = scanner.nextDouble();
+        }
         scanner.nextLine();
 
         Tour newTour = Tour.builder()
