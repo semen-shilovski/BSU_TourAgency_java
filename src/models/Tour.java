@@ -6,8 +6,6 @@ public class Tour {
     private double price;
     private boolean isLastMinute;
     private double discountForRegularCustomers;
-    private Client client;
-    private TourAgent tourAgent;
 
     public Tour(String name, String type, double price, boolean isLastMinute, double discountForRegularCustomers) {
         this.name = name;
@@ -30,14 +28,6 @@ public class Tour {
 
     public double getPrice() {
         return price;
-    }
-
-    public Client getClient() {
-        return client;
-    }
-
-    public TourAgent getTourAgent() {
-        return tourAgent;
     }
 
     public boolean isLastMinute() {
@@ -64,14 +54,6 @@ public class Tour {
         isLastMinute = lastMinute;
     }
 
-    public void setClient(Client client) {
-        this.client = client;
-    }
-
-    public void setTourAgent(TourAgent tourAgent) {
-        this.tourAgent = tourAgent;
-    }
-
     public void setDiscountForRegularCustomers(double discountForRegularCustomers) {
         this.discountForRegularCustomers = discountForRegularCustomers;
     }
@@ -86,8 +68,6 @@ public class Tour {
         private double price;
         private boolean isLastMinute;
         private double discountForRegularCustomers;
-        private Client client;
-        private TourAgent tourAgent;
 
         public TourBuilder name(String name) {
             this.name = name;
@@ -96,16 +76,6 @@ public class Tour {
 
         public TourBuilder type(String type) {
             this.type = type;
-            return this;
-        }
-
-        public TourBuilder client(Client client) {
-            this.client = client;
-            return this;
-        }
-
-        public TourBuilder tourAgent(TourAgent tourAgent) {
-            this.tourAgent = tourAgent;
             return this;
         }
 
@@ -131,8 +101,6 @@ public class Tour {
             tour.price = this.price;
             tour.isLastMinute = this.isLastMinute;
             tour.discountForRegularCustomers = this.discountForRegularCustomers;
-            tour.client = this.client;
-            tour.tourAgent = this.tourAgent;
             return tour;
         }
     }
@@ -145,8 +113,6 @@ public class Tour {
                 ", price=" + price +
                 ", isLastMinute=" + isLastMinute +
                 ", discountForRegularCustomers=" + discountForRegularCustomers +
-                ", client=" + client +
-                ", tourAgent=" + tourAgent +
                 '}';
     }
 }

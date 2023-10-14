@@ -1,46 +1,36 @@
-import models.interfaces.TourStrategy;
-import models.strategy.*;
+import models.Tour;
 import services.TravelAgencyService;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Scanner;
 
 public class Main {
     public static void main(String[] args) {
         TravelAgencyService travelAgencyService = new TravelAgencyService();
+        travelAgencyService.addTour(Tour.builder()
+                .name("Beach Vacation")
+                .type("Vacation")
+                .price(900)
+                .lastMinute(true)
+                .discountForRegularCustomers(0.2)
+                .build());
+        travelAgencyService.addTour(Tour.builder()
+                .name("City Excursion")
+                .type("Excursion")
+                .price(400)
+                .lastMinute(false)
+                .discountForRegularCustomers(0.1)
+                .build());
+        travelAgencyService.addTour(Tour.builder()
+                .name("Shopping mall")
+                .type("Shopping")
+                .price(200)
+                .lastMinute(false)
+                .discountForRegularCustomers(0.3)
+                .build());
 
-        Scanner scanner = new Scanner(System.in);
-        boolean exit = false;
+        System.out.println("Before sorting by Price : " + travelAgencyService.getTours().stream().map(Tour::getName).toList());
+        travelAgencyService.sortToursByPrice();
+        System.out.println("After sorting by Price : " + travelAgencyService.getTours().stream().map(Tour::getName).toList());
 
-        Map<Integer, TourStrategy> strategies = new HashMap<>();
-        strategies.put(1, new AddTourStrategy());
-        strategies.put(2, new ShowSortedToursStrategy());
-        strategies.put(3, new DeleteTourStrategy());
-        strategies.put(4, new SearchTourByNameStrategy());
-        strategies.put(5, new GetAllLastMinuteToursStrategy());
-        strategies.put(6, new GetAllToursStrategy());
-
-        while (!exit) {
-            System.out.println("Выберите действие:");
-            System.out.println("1. Добавить тур");
-            System.out.println("2. Показать отсортированные туры по цене");
-            System.out.println("3. Удалить тур");
-            System.out.println("4. Поиск тура по имени");
-            System.out.println("5. Показать горящие туры");
-            System.out.println("6. Вывести все туры");
-            System.out.println("7. Выйти");
-
-            int choice = scanner.nextInt();
-            scanner.nextLine();
-
-            if (strategies.containsKey(choice)) {
-                strategies.get(choice).execute(travelAgencyService, scanner);
-            } else if (choice == 7) {
-                exit = true;
-            } else {
-                System.out.println("Неверный выбор. Пожалуйста, выберите действие из списка.");
-            }
-        }
+        System.out.println("Find by name (Beach Vacation) : " + travelAgencyService.searchTourByName("Beach Vacation"));
+        System.out.println("Find by lastMinute : " + travelAgencyService.getLastMinuteTours());
     }
 }
