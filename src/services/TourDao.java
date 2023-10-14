@@ -21,10 +21,9 @@ public class TourDao implements Dao<Tour> {
             where tr.name = ?
              """;
     private static final String DELETE_BY_NAME = "DELETE FROM tours WHERE name = ?";
-    private static final String UPDATE_TOUR_BY_NAME = "UPDATE tours SET name = ?, type = ?, price = ?, is_last_minute = ?, discount = ? WHERE name = ?";
+    private static final String UPDATE_TOUR_BY_NAME = "UPDATE tours SET name = ?, type = ?, price = ?, is_last_minute = ?, discount = ?, client_id = ?, tour_agent_id = ? WHERE name = ?";
 
 
-    @Override
     public Optional<Tour> getByName(String name) {
         try (Connection connection = JdbcConnector.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(SELECT_BY_NAME)) {
@@ -101,7 +100,9 @@ public class TourDao implements Dao<Tour> {
             preparedStatement.setDouble(3, tour.getPrice());
             preparedStatement.setBoolean(4, tour.isLastMinute());
             preparedStatement.setDouble(5, tour.getDiscountForRegularCustomers());
-            preparedStatement.setString(6, tour.getName());
+            preparedStatement.setInt(6, tour.getClient().getId());
+            preparedStatement.setInt(7, tour.getTourAgent().getId());
+            preparedStatement.setString(8, tour.getName());
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();

@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Objects;
 
 public class TravelAgencyService {
-    private Dao<Tour> tourDao = new TourDao();
+    private TourDao tourDao = new TourDao();
     private ClientService clientService = new ClientService();
     private TourAgentService tourAgentService = new TourAgentService();
 
