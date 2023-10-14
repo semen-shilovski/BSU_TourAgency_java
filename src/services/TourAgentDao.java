@@ -10,6 +10,7 @@ import java.util.Optional;
 
 import static services.ConnectionPool.getConnection;
 import static services.ConnectionPool.releaseConnection;
+import static services.LoggerManager.logException;
 
 public class TourAgentDao implements Dao<TourAgent> {
 
@@ -35,7 +36,7 @@ public class TourAgentDao implements Dao<TourAgent> {
         try {
             connection = getConnection();
         } catch (SQLException e) {
-            e.printStackTrace();
+            logException(e);
         }
         try (PreparedStatement preparedStatement = connection.prepareStatement(SELECT_BY_ID)) {
             preparedStatement.setInt(1, id);
@@ -45,7 +46,7 @@ public class TourAgentDao implements Dao<TourAgent> {
                 }
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            logException(e);
         } finally {
             releaseConnection(connection);
         }
@@ -66,14 +67,14 @@ public class TourAgentDao implements Dao<TourAgent> {
         try {
             connection = getConnection();
         } catch (SQLException e) {
-            e.printStackTrace();
+            logException(e);
         }
         List<TourAgent> tourAgents = new ArrayList<>();
         try (Statement statement = connection.createStatement();
              ResultSet resultSet = statement.executeQuery(SELECT_ALL_TOUR_AGENT_SQL)) {
             while (resultSet.next()) tourAgents.add(mapTourAgentFromResultSet(resultSet));
         } catch (SQLException e) {
-            e.printStackTrace();
+            logException(e);
         } finally {
             releaseConnection(connection);
         }
@@ -86,14 +87,14 @@ public class TourAgentDao implements Dao<TourAgent> {
         try {
             connection = getConnection();
         } catch (SQLException e) {
-            e.printStackTrace();
+            logException(e);
         }
         try (PreparedStatement preparedStatement = connection.prepareStatement(INSERT_TOUR_AGENT_SQL)) {
             preparedStatement.setString(1, tourAgent.getName());
             preparedStatement.setString(2, tourAgent.getPhoneNumber());
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
-            e.printStackTrace();
+            logException(e);
         } finally {
             releaseConnection(connection);
         }
@@ -105,7 +106,7 @@ public class TourAgentDao implements Dao<TourAgent> {
         try {
             connection = getConnection();
         } catch (SQLException e) {
-            e.printStackTrace();
+            logException(e);
         }
         try (PreparedStatement preparedStatement = connection.prepareStatement(UPDATE_TOUR_AGENT_BY_NAME)) {
             preparedStatement.setString(1, tourAgent.getName());
@@ -113,7 +114,7 @@ public class TourAgentDao implements Dao<TourAgent> {
             preparedStatement.setString(3, tourAgent.getName());
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
-            e.printStackTrace();
+            logException(e);
         } finally {
             releaseConnection(connection);
         }
@@ -125,13 +126,13 @@ public class TourAgentDao implements Dao<TourAgent> {
         try {
             connection = getConnection();
         } catch (SQLException e) {
-            e.printStackTrace();
+            logException(e);
         }
         try (PreparedStatement preparedStatement = connection.prepareStatement(DELETE_BY_NAME)) {
             preparedStatement.setString(1, tourAgent.getName());
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
-            e.printStackTrace();
+            logException(e);
         } finally {
             releaseConnection(connection);
         }

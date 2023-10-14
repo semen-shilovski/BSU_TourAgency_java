@@ -9,6 +9,8 @@ import java.util.Properties;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
+import static services.LoggerManager.logException;
+
 public class ConnectionPool {
     private static final int POOL_SIZE = 10;
     private static BlockingQueue<Connection> connectionQueue;
@@ -29,6 +31,7 @@ public class ConnectionPool {
             properties.load(fis);
         } catch (IOException e) {
             e.printStackTrace();
+            logException(e);
             throw new RuntimeException("Error loading properties file.");
         }
 
@@ -41,7 +44,7 @@ public class ConnectionPool {
                 Connection connection = DriverManager.getConnection(dbUrl, dbUser, dbPassword);
                 connectionQueue.offer(connection);
             } catch (SQLException e) {
-                e.printStackTrace();
+                logException(e);
                 throw new RuntimeException("Error creating database connections.");
             }
         }
@@ -52,6 +55,7 @@ public class ConnectionPool {
             return connectionQueue.take();
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
+            logException(e);
             throw new SQLException("Interrupted while waiting for a connection.");
         }
     }

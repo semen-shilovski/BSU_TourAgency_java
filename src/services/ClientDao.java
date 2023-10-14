@@ -10,6 +10,7 @@ import java.util.Optional;
 
 import static services.ConnectionPool.getConnection;
 import static services.ConnectionPool.releaseConnection;
+import static services.LoggerManager.logException;
 
 public class ClientDao implements Dao<Client> {
     private static final String SELECT_BY_ID = """
@@ -35,7 +36,7 @@ public class ClientDao implements Dao<Client> {
         try {
             connection = getConnection();
         } catch (SQLException e) {
-            e.printStackTrace();
+            logException(e);
         }
         try (PreparedStatement preparedStatement = connection.prepareStatement(SELECT_BY_ID)) {
             preparedStatement.setInt(1, id);
@@ -45,7 +46,7 @@ public class ClientDao implements Dao<Client> {
                 }
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            logException(e);
         } finally {
             releaseConnection(connection);
         }
@@ -67,14 +68,14 @@ public class ClientDao implements Dao<Client> {
         try {
             connection = getConnection();
         } catch (SQLException e) {
-            e.printStackTrace();
+            logException(e);
         }
         List<Client> clients = new ArrayList<>();
         try (Statement statement = connection.createStatement();
              ResultSet resultSet = statement.executeQuery(SELECT_ALL_CLIENTS_SQL)) {
             while (resultSet.next()) clients.add(mapClientFromResultSet(resultSet));
         } catch (SQLException e) {
-            e.printStackTrace();
+            logException(e);
         } finally {
             releaseConnection(connection);
         }
@@ -87,7 +88,7 @@ public class ClientDao implements Dao<Client> {
         try {
             connection = getConnection();
         } catch (SQLException e) {
-            e.printStackTrace();
+            logException(e);
         }
         try (PreparedStatement preparedStatement = connection.prepareStatement(INSERT_CLIENT_SQL)) {
             preparedStatement.setString(1, client.getName());
@@ -95,7 +96,7 @@ public class ClientDao implements Dao<Client> {
             preparedStatement.setString(3, client.getAddress());
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
-            e.printStackTrace();
+            logException(e);
         } finally {
             releaseConnection(connection);
         }
@@ -107,7 +108,7 @@ public class ClientDao implements Dao<Client> {
         try {
             connection = getConnection();
         } catch (SQLException e) {
-            e.printStackTrace();
+            logException(e);
         }
         try (PreparedStatement preparedStatement = connection.prepareStatement(UPDATE_CLIENT_BY_NAME)) {
             preparedStatement.setString(1, client.getName());
@@ -116,7 +117,7 @@ public class ClientDao implements Dao<Client> {
             preparedStatement.setString(4, client.getName());
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
-            e.printStackTrace();
+            logException(e);
         } finally {
             releaseConnection(connection);
         }
@@ -128,13 +129,13 @@ public class ClientDao implements Dao<Client> {
         try {
             connection = getConnection();
         } catch (SQLException e) {
-            e.printStackTrace();
+            logException(e);
         }
         try (PreparedStatement preparedStatement = connection.prepareStatement(DELETE_BY_NAME)) {
             preparedStatement.setString(1, client.getName());
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
-            e.printStackTrace();
+            logException(e);
         } finally {
             releaseConnection(connection);
         }
