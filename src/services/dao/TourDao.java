@@ -1,4 +1,4 @@
-package services;
+package services.dao;
 
 import models.Client;
 import models.Tour;
@@ -10,9 +10,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static services.ConnectionPool.getConnection;
-import static services.ConnectionPool.releaseConnection;
-import static services.LoggerManager.logException;
+import static services.utils.ConnectionPool.getConnection;
+import static services.utils.ConnectionPool.releaseConnection;
+import static services.utils.LoggerManager.logException;
 
 public class TourDao implements Dao<Tour> {
     private static final String INSERT_TOUR_SQL = "INSERT INTO tours (name, type, price, is_last_minute, discount, client_id, tour_agent_id) VALUES (?, ?, ?, ?, ?, ?, ?)";

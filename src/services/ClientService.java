@@ -2,6 +2,7 @@ package services;
 
 import models.Client;
 import models.interfaces.Dao;
+import services.dao.ClientDao;
 
 import java.util.List;
 import java.util.Objects;

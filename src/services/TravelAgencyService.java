@@ -2,7 +2,7 @@ package services;
 
 import models.Tour;
 import models.comporators.TourPriceComparator;
-import models.interfaces.Dao;
+import services.dao.TourDao;
 
 import java.util.List;
 import java.util.Objects;

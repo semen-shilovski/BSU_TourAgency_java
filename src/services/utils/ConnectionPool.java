@@ -1,4 +1,4 @@
-package services;
+package services.utils;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -9,7 +9,7 @@ import java.util.Properties;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
-import static services.LoggerManager.logException;
+import static services.utils.LoggerManager.logException;
 
 public class ConnectionPool {
     private static final int POOL_SIZE = 10;
