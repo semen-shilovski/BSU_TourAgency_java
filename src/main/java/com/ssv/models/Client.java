@@ -1,9 +1,18 @@
 package com.ssv.models;
 
+import jakarta.persistence.*;
+
+@Entity
+@Table(name = "client")
 public class Client {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     Integer id;
+    @Column(name = "name")
     String name;
+    @Column(name = "phoneNumber")
     String phoneNumber;
+    @Column(name = "address")
     String address;
 
     public String getName() {

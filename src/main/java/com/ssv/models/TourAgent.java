@@ -1,8 +1,16 @@
 package com.ssv.models;
 
+import jakarta.persistence.*;
+
+@Entity
+@Table(name = "tour_agent")
 public class TourAgent {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     Integer id;
+    @Column(name = "name")
     String name;
+    @Column(name = "phoneNumber")
     String phoneNumber;
 
     public Integer getId() {

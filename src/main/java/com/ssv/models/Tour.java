@@ -1,12 +1,28 @@
 package com.ssv.models;
 
+import jakarta.persistence.*;
+
+@Entity
+@Table(name = "tours")
 public class Tour {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    Integer id;
+    @Column(name = "name")
     private String name;
+    @Column(name = "type")
     private String type;
+    @Column(name = "price")
     private double price;
+    @Column(name = "is_last_minute")
     private boolean isLastMinute;
+    @Column(name = "discount")
     private double discountForRegularCustomers;
+    @OneToOne
+    @JoinColumn(name = "client_id")
     private Client client;
+    @OneToOne
+    @JoinColumn(name = "tour_agent_id")
     private TourAgent tourAgent;
 
     public Tour(String name, String type, double price, boolean isLastMinute, double discountForRegularCustomers) {
@@ -17,7 +33,8 @@ public class Tour {
         this.discountForRegularCustomers = discountForRegularCustomers;
     }
 
-    private Tour() {
+    public Tour() {
+
     }
 
     public String getName() {
