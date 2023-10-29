@@ -4,6 +4,12 @@ import jakarta.persistence.*;
 
 @Entity
 @Table(name = "tours")
+@NamedQueries({
+        @NamedQuery(name = "Tour.selectById", query = "select tr from Tour tr where tr.id = :id"),
+        @NamedQuery(name = "Tour.selectAll", query = "select tr from Tour tr"),
+        @NamedQuery(name = "Tour.deleteTourByName", query = "delete Tour tr where tr.name = :name"),
+        @NamedQuery(name = "Tour.updateTourByName", query = "update Tour tr SET tr.name = :name, tr.type = :type, tr.price = :price, tr.isLastMinute = :isLastMinute, tr.discountForRegularCustomers = :discount, tr.client.id = :clientId, tr.tourAgent.id = :tourAgentId WHERE name = :nameEq")
+})
 public class Tour {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
