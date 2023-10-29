@@ -5,74 +5,69 @@ import com.ssv.models.Client;
 import com.ssv.models.Tour;
 import com.ssv.models.TourAgent;
 import com.ssv.models.interfaces.Dao;
+import org.hibernate.query.Query;
 
-import java.sql.*;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
-import static com.ssv.services.utils.ConnectionPool.getConnection;
-import static com.ssv.services.utils.ConnectionPool.releaseConnection;
+import static com.ssv.services.utils.HibernateConnectionPool.getSession;
+import static com.ssv.services.utils.HibernateConnectionPool.releaseSession;
 import static com.ssv.services.utils.LoggerManager.logException;
+
 public class TourDao implements Dao<Tour> {
-    private static final String INSERT_TOUR_SQL = "INSERT INTO tours (name, type, price, is_last_minute, discount, client_id, tour_agent_id) VALUES (?, ?, ?, ?, ?, ?, ?)";
-    private static final String SELECT_ALL_TOURS_SQL = """
-                SELECT * FROM tours tr
-            """;
-    private static final String SELECT_BY_NAME = """
-            SELECT *
-              FROM tours tr
-            where tr.name = ?
-             """;
-    private static final String DELETE_BY_NAME = "DELETE FROM tours WHERE name = ?";
-    private static final String UPDATE_TOUR_BY_NAME = "UPDATE tours SET name = ?, type = ?, price = ?, is_last_minute = ?, discount = ?, client_id = ?, tour_agent_id = ? WHERE name = ?";
+    private static final String SELECT_ALL_TOURS_SQL = "Tour.selectAll";
+    private static final String SELECT_BY_NAME = "Tour.selectByName";
+    private static final String SELECT_BY_ID = "Tour.selectById";
+    private static final String DELETE_BY_NAME = "Tour.deleteTourByName";
+    private static final String UPDATE_TOUR_BY_NAME = "Tour.updateTourByName";
 
 
     public Optional<Tour> getByName(String name) {
-        Connection connection = null;
+        var session = getSession();
         try {
-            connection = getConnection();
-        } catch (SQLException e) {
-            logException(e);
-        }
-        try (PreparedStatement preparedStatement = connection.prepareStatement(SELECT_BY_NAME)) {
-            preparedStatement.setString(1, name);
-            try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                if (resultSet.next()) {
-                    return Optional.of(mapTourFromResultSet(resultSet));
-                }
-            }
-        } catch (SQLException e) {
+            Query query = session.getNamedQuery(SELECT_BY_NAME);
+            query.setParameter("name", name);
+            return Optional.of((Tour) query.getSingleResult());
+        } catch (Exception e) {
             logException(e);
         } finally {
-            releaseConnection(connection);
+            releaseSession(session);
         }
         return Optional.empty();
     }
 
     @Override
     public Optional<Tour> getById(Integer id) {
+        var session = getSession();
+        try {
+            Query query = session.getNamedQuery(SELECT_BY_ID);
+            query.setParameter("id", id);
+            return Optional.of((Tour) query.getSingleResult());
+        } catch (Exception e) {
+            logException(e);
+        } finally {
+            releaseSession(session);
+        }
         return Optional.empty();
     }
 
     @Override
     public List<Tour> getAll() {
-        Connection connection = null;
+        List<Tour> entries = new ArrayList<>();
+        var session = getSession();
         try {
-            connection = getConnection();
-        } catch (SQLException e) {
-            logException(e);
-        }
-        List<Tour> tours = new ArrayList<>();
-        try (Statement statement = connection.createStatement();
-             ResultSet resultSet = statement.executeQuery(SELECT_ALL_TOURS_SQL)) {
-            while (resultSet.next()) tours.add(mapTourFromResultSet(resultSet));
-        } catch (SQLException e) {
+            Query query = session.getNamedQuery(SELECT_ALL_TOURS_SQL);
+            return query.list();
+        } catch (Exception e) {
             logException(e);
         } finally {
-            releaseConnection(connection);
+            releaseSession(session);
         }
-        return tours;
+        return entries;
     }
 
     private Tour mapTourFromResultSet(ResultSet resultSet) throws SQLException {
@@ -94,68 +89,56 @@ public class TourDao implements Dao<Tour> {
 
     @Override
     public void save(Tour tour) {
-        Connection connection = null;
+        var session = getSession();
+        var tx = session.beginTransaction();
         try {
-            connection = getConnection();
-        } catch (SQLException e) {
-            logException(e);
-        }
-        try (PreparedStatement preparedStatement = connection.prepareStatement(INSERT_TOUR_SQL)) {
-            preparedStatement.setString(1, tour.getName());
-            preparedStatement.setString(2, tour.getType());
-            preparedStatement.setDouble(3, tour.getPrice());
-            preparedStatement.setBoolean(4, tour.isLastMinute());
-            preparedStatement.setDouble(5, tour.getDiscountForRegularCustomers());
-            preparedStatement.setInt(6, tour.getClient().getId());
-            preparedStatement.setInt(7, tour.getTourAgent().getId());
-            preparedStatement.executeUpdate();
-        } catch (SQLException e) {
+            session.persist(tour);
+            tx.commit();
+        } catch (Exception e) {
+            if (Objects.nonNull(tx)) tx.rollback();
             logException(e);
         } finally {
-            releaseConnection(connection);
+            releaseSession(session);
         }
     }
 
     @Override
     public void update(Tour tour) {
-        Connection connection = null;
+        var session = getSession();
+        var tx = session.beginTransaction();
         try {
-            connection = getConnection();
-        } catch (SQLException e) {
-            logException(e);
-        }
-        try (PreparedStatement preparedStatement = connection.prepareStatement(UPDATE_TOUR_BY_NAME)) {
-            preparedStatement.setString(1, tour.getName());
-            preparedStatement.setString(2, tour.getType());
-            preparedStatement.setDouble(3, tour.getPrice());
-            preparedStatement.setBoolean(4, tour.isLastMinute());
-            preparedStatement.setDouble(5, tour.getDiscountForRegularCustomers());
-            preparedStatement.setInt(6, tour.getClient().getId());
-            preparedStatement.setInt(7, tour.getTourAgent().getId());
-            preparedStatement.setString(8, tour.getName());
-            preparedStatement.executeUpdate();
-        } catch (SQLException e) {
+            Query query = session.getNamedQuery(UPDATE_TOUR_BY_NAME);
+            query.setParameter("name", tour.getName());
+            query.setParameter("type", tour.getType());
+            query.setParameter("price", tour.getPrice());
+            query.setParameter("isLastMinute", tour.isLastMinute());
+            query.setParameter("discount", tour.getDiscountForRegularCustomers());
+            query.setParameter("clientId", tour.getClient().getId());
+            query.setParameter("tourAgentId", tour.getTourAgent().getId());
+            query.setParameter("nameEq", tour.getName());
+            query.executeUpdate();
+            tx.commit();
+        } catch (Exception e) {
+            if (Objects.nonNull(tx)) tx.rollback();
             logException(e);
         } finally {
-            releaseConnection(connection);
+            releaseSession(session);
         }
     }
 
     @Override
     public void delete(Tour tour) {
-        Connection connection = null;
+        var session = getSession();
+        var tx = session.beginTransaction();
         try {
-            connection = getConnection();
-        } catch (SQLException e) {
-            logException(e);
-        }
-        try (PreparedStatement preparedStatement = connection.prepareStatement(DELETE_BY_NAME)) {
-            preparedStatement.setString(1, tour.getName());
-            preparedStatement.executeUpdate();
-        } catch (SQLException e) {
+            Query query = session.getNamedQuery(DELETE_BY_NAME);
+            query.executeUpdate();
+            tx.commit();
+        } catch (Exception e) {
+            if (Objects.nonNull(tx)) tx.rollback();
             logException(e);
         } finally {
-            releaseConnection(connection);
+            releaseSession(session);
         }
     }
 }

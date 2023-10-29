@@ -2,53 +2,40 @@ package com.ssv.services.dao;
 
 import com.ssv.models.Client;
 import com.ssv.models.interfaces.Dao;
+import org.hibernate.query.Query;
 
-import java.sql.*;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
-import static com.ssv.services.utils.ConnectionPool.getConnection;
-import static com.ssv.services.utils.ConnectionPool.releaseConnection;
+import static com.ssv.services.utils.HibernateConnectionPool.getSession;
+import static com.ssv.services.utils.HibernateConnectionPool.releaseSession;
 import static com.ssv.services.utils.LoggerManager.logException;
 
 public class ClientDao implements Dao<Client> {
-    private static final String SELECT_BY_ID = """
-            SELECT *
-              FROM client cl
-            where cl.id = ?
-             """;
+    private static final String SELECT_BY_ID = "Client.selectById";
 
-    private static final String SELECT_ALL_CLIENTS_SQL = """
-                SELECT * FROM client
-            """;
+    private static final String SELECT_ALL_CLIENTS_SQL = "Client.selectAll";
 
-    private static final String INSERT_CLIENT_SQL = "INSERT INTO client (name, phonenumber, address) VALUES (?, ?, ?)";
+    private static final String DELETE_BY_NAME = "Client.deleteClientByName";
 
-    private static final String DELETE_BY_NAME = "DELETE FROM client WHERE name = ?";
-
-    private static final String UPDATE_CLIENT_BY_NAME = "UPDATE client SET name = ?, phonenumber = ?, address = ? WHERE name = ?";
+    private static final String UPDATE_CLIENT_BY_NAME = "Client.updateClientByName";
 
 
     @Override
     public Optional<Client> getById(Integer id) {
-        Connection connection = null;
+        var session = getSession();
         try {
-            connection = getConnection();
-        } catch (SQLException e) {
-            logException(e);
-        }
-        try (PreparedStatement preparedStatement = connection.prepareStatement(SELECT_BY_ID)) {
-            preparedStatement.setInt(1, id);
-            try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                if (resultSet.next()) {
-                    return Optional.of(mapClientFromResultSet(resultSet));
-                }
-            }
-        } catch (SQLException e) {
+            Query query = session.getNamedQuery(SELECT_BY_ID);
+            query.setParameter("id", id);
+            return Optional.of((Client) query.getSingleResult());
+        } catch (Exception e) {
             logException(e);
         } finally {
-            releaseConnection(connection);
+            releaseSession(session);
         }
         return Optional.empty();
     }
@@ -64,80 +51,67 @@ public class ClientDao implements Dao<Client> {
 
     @Override
     public List<Client> getAll() {
-        Connection connection = null;
+        List<Client> entries = new ArrayList<>();
+        var session = getSession();
         try {
-            connection = getConnection();
-        } catch (SQLException e) {
-            logException(e);
-        }
-        List<Client> clients = new ArrayList<>();
-        try (Statement statement = connection.createStatement();
-             ResultSet resultSet = statement.executeQuery(SELECT_ALL_CLIENTS_SQL)) {
-            while (resultSet.next()) clients.add(mapClientFromResultSet(resultSet));
-        } catch (SQLException e) {
+            Query query = session.getNamedQuery(SELECT_ALL_CLIENTS_SQL);
+            return query.list();
+        } catch (Exception e) {
             logException(e);
         } finally {
-            releaseConnection(connection);
+            releaseSession(session);
         }
-        return clients;
+        return entries;
     }
 
     @Override
     public void save(Client client) {
-        Connection connection = null;
+        var session = getSession();
+        var tx = session.beginTransaction();
         try {
-            connection = getConnection();
-        } catch (SQLException e) {
-            logException(e);
-        }
-        try (PreparedStatement preparedStatement = connection.prepareStatement(INSERT_CLIENT_SQL)) {
-            preparedStatement.setString(1, client.getName());
-            preparedStatement.setString(2, client.getPhoneNumber());
-            preparedStatement.setString(3, client.getAddress());
-            preparedStatement.executeUpdate();
-        } catch (SQLException e) {
+            session.persist(client);
+            tx.commit();
+        } catch (Exception e) {
+            if (Objects.nonNull(tx)) tx.rollback();
             logException(e);
         } finally {
-            releaseConnection(connection);
+            releaseSession(session);
         }
     }
 
     @Override
     public void update(Client client) {
-        Connection connection = null;
+        var session = getSession();
+        var tx = session.beginTransaction();
         try {
-            connection = getConnection();
-        } catch (SQLException e) {
-            logException(e);
-        }
-        try (PreparedStatement preparedStatement = connection.prepareStatement(UPDATE_CLIENT_BY_NAME)) {
-            preparedStatement.setString(1, client.getName());
-            preparedStatement.setString(2, client.getPhoneNumber());
-            preparedStatement.setString(3, client.getAddress());
-            preparedStatement.setString(4, client.getName());
-            preparedStatement.executeUpdate();
-        } catch (SQLException e) {
+            Query query = session.getNamedQuery(UPDATE_CLIENT_BY_NAME);
+            query.setParameter("name", client.getName());
+            query.setParameter("phonenumber", client.getPhoneNumber());
+            query.setParameter("address", client.getAddress());
+            query.setParameter("nameEq", client.getName());
+            query.executeUpdate();
+            tx.commit();
+        } catch (Exception e) {
+            if (Objects.nonNull(tx)) tx.rollback();
             logException(e);
         } finally {
-            releaseConnection(connection);
+            releaseSession(session);
         }
     }
 
     @Override
     public void delete(Client client) {
-        Connection connection = null;
+        var session = getSession();
+        var tx = session.beginTransaction();
         try {
-            connection = getConnection();
-        } catch (SQLException e) {
-            logException(e);
-        }
-        try (PreparedStatement preparedStatement = connection.prepareStatement(DELETE_BY_NAME)) {
-            preparedStatement.setString(1, client.getName());
-            preparedStatement.executeUpdate();
-        } catch (SQLException e) {
+            Query query = session.getNamedQuery(DELETE_BY_NAME);
+            query.executeUpdate();
+            tx.commit();
+        } catch (Exception e) {
+            if (Objects.nonNull(tx)) tx.rollback();
             logException(e);
         } finally {
-            releaseConnection(connection);
+            releaseSession(session);
         }
     }
 }

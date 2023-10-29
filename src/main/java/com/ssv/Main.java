@@ -9,8 +9,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
 
+import static com.ssv.services.utils.HibernateConnectionPool.getSession;
+
 public class Main {
     public static void main(String[] args) {
+        var sess = getSession();
         TravelAgencyService travelAgencyService = new TravelAgencyService();
 
         Scanner scanner = new Scanner(System.in);

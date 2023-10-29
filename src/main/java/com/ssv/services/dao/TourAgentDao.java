@@ -3,53 +3,37 @@ package com.ssv.services.dao;
 
 import com.ssv.models.TourAgent;
 import com.ssv.models.interfaces.Dao;
+import org.hibernate.query.Query;
 
-import java.sql.*;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
-import static com.ssv.services.utils.ConnectionPool.getConnection;
-import static com.ssv.services.utils.ConnectionPool.releaseConnection;
+import static com.ssv.services.utils.HibernateConnectionPool.getSession;
+import static com.ssv.services.utils.HibernateConnectionPool.releaseSession;
 import static com.ssv.services.utils.LoggerManager.logException;
 
 public class TourAgentDao implements Dao<TourAgent> {
 
-    private static final String SELECT_BY_ID = """
-            SELECT *
-              FROM tour_agent ta
-            where ta.id = ?
-             """;
-
-    private static final String SELECT_ALL_TOUR_AGENT_SQL = """
-                SELECT * FROM tour_agent
-            """;
-
-    private static final String INSERT_TOUR_AGENT_SQL = "INSERT INTO tour_agent (name, phonenumber) VALUES (?, ?)";
-
-    private static final String DELETE_BY_NAME = "DELETE FROM tour_agent WHERE name = ?";
-
-    private static final String UPDATE_TOUR_AGENT_BY_NAME = "UPDATE tour_agent SET name = ?, phonenumber = ? WHERE name = ?";
+    private static final String SELECT_BY_ID = "TourAgent.selectById";
+    private static final String SELECT_ALL_TOUR_AGENT_SQL = "TourAgent.selectAll";
+    private static final String DELETE_BY_NAME = "TourAgent.deleteTourAgentByName";
+    private static final String UPDATE_TOUR_AGENT_BY_NAME = "TourAgent.updateTourAgentByName";
 
     @Override
     public Optional<TourAgent> getById(Integer id) {
-        Connection connection = null;
+        var session = getSession();
         try {
-            connection = getConnection();
-        } catch (SQLException e) {
-            logException(e);
-        }
-        try (PreparedStatement preparedStatement = connection.prepareStatement(SELECT_BY_ID)) {
-            preparedStatement.setInt(1, id);
-            try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                if (resultSet.next()) {
-                    return Optional.of(mapTourAgentFromResultSet(resultSet));
-                }
-            }
-        } catch (SQLException e) {
+            Query query = session.getNamedQuery(SELECT_BY_ID);
+            query.setParameter("id", id);
+            return Optional.of((TourAgent) query.getSingleResult());
+        } catch (Exception e) {
             logException(e);
         } finally {
-            releaseConnection(connection);
+            releaseSession(session);
         }
         return Optional.empty();
     }
@@ -62,80 +46,69 @@ public class TourAgentDao implements Dao<TourAgent> {
                 .build();
     }
 
+
     @Override
     public List<TourAgent> getAll() {
-        Connection connection = null;
+        List<TourAgent> entries = new ArrayList<>();
+        var session = getSession();
         try {
-            connection = getConnection();
-        } catch (SQLException e) {
-            logException(e);
-        }
-        List<TourAgent> tourAgents = new ArrayList<>();
-        try (Statement statement = connection.createStatement();
-             ResultSet resultSet = statement.executeQuery(SELECT_ALL_TOUR_AGENT_SQL)) {
-            while (resultSet.next()) tourAgents.add(mapTourAgentFromResultSet(resultSet));
-        } catch (SQLException e) {
+            Query query = session.getNamedQuery(SELECT_ALL_TOUR_AGENT_SQL);
+            return query.list();
+        } catch (Exception e) {
             logException(e);
         } finally {
-            releaseConnection(connection);
+            releaseSession(session);
         }
-        return tourAgents;
+        return entries;
     }
 
     @Override
     public void save(TourAgent tourAgent) {
-        Connection connection = null;
+        var session = getSession();
+        var tx = session.beginTransaction();
         try {
-            connection = getConnection();
-        } catch (SQLException e) {
-            logException(e);
-        }
-        try (PreparedStatement preparedStatement = connection.prepareStatement(INSERT_TOUR_AGENT_SQL)) {
-            preparedStatement.setString(1, tourAgent.getName());
-            preparedStatement.setString(2, tourAgent.getPhoneNumber());
-            preparedStatement.executeUpdate();
-        } catch (SQLException e) {
+            session.persist(tourAgent);
+            tx.commit();
+        } catch (Exception e) {
+            if (Objects.nonNull(tx)) tx.rollback();
             logException(e);
         } finally {
-            releaseConnection(connection);
+            releaseSession(session);
         }
     }
 
     @Override
     public void update(TourAgent tourAgent) {
-        Connection connection = null;
+        var session = getSession();
+        var tx = session.beginTransaction();
         try {
-            connection = getConnection();
-        } catch (SQLException e) {
-            logException(e);
-        }
-        try (PreparedStatement preparedStatement = connection.prepareStatement(UPDATE_TOUR_AGENT_BY_NAME)) {
-            preparedStatement.setString(1, tourAgent.getName());
-            preparedStatement.setString(2, tourAgent.getPhoneNumber());
-            preparedStatement.setString(3, tourAgent.getName());
-            preparedStatement.executeUpdate();
-        } catch (SQLException e) {
+            Query query = session.getNamedQuery(UPDATE_TOUR_AGENT_BY_NAME);
+            query.setParameter("name", tourAgent.getName());
+            query.setParameter("phonenumber", tourAgent.getPhoneNumber());
+            query.setParameter("nameEq", tourAgent.getName());
+            query.executeUpdate();
+            tx.commit();
+        } catch (Exception e) {
+            if (Objects.nonNull(tx)) tx.rollback();
             logException(e);
         } finally {
-            releaseConnection(connection);
+            releaseSession(session);
         }
     }
 
     @Override
     public void delete(TourAgent tourAgent) {
-        Connection connection = null;
+        var session = getSession();
+        var tx = session.beginTransaction();
         try {
-            connection = getConnection();
-        } catch (SQLException e) {
-            logException(e);
-        }
-        try (PreparedStatement preparedStatement = connection.prepareStatement(DELETE_BY_NAME)) {
-            preparedStatement.setString(1, tourAgent.getName());
-            preparedStatement.executeUpdate();
-        } catch (SQLException e) {
+            Query query = session.getNamedQuery(DELETE_BY_NAME);
+            query.executeUpdate();
+            tx.commit();
+        } catch (Exception e) {
+            if (Objects.nonNull(tx)) tx.rollback();
             logException(e);
         } finally {
-            releaseConnection(connection);
+            releaseSession(session);
         }
     }
 }
