@@ -103,7 +103,9 @@ public class Tour {
         private double price;
         private boolean isLastMinute;
         private double discountForRegularCustomers;
+        @OneToOne(mappedBy = "tour")
         private Client client;
+        @OneToOne(mappedBy = "tour")
         private TourAgent tourAgent;
 
         public TourBuilder name(String name) {

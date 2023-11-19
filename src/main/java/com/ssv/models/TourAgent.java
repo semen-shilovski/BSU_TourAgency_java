@@ -13,6 +13,10 @@ public class TourAgent {
     @Column(name = "phoneNumber")
     String phoneNumber;
 
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "tour_id", nullable = false)
+    Tour tour;
+
     public Integer getId() {
         return id;
     }
