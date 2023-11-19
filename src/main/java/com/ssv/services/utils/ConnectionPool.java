@@ -1,66 +1,59 @@
 package com.ssv.services.utils;
 
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.util.Properties;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityManagerFactory;
+import jakarta.persistence.Persistence;
+
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
 import static com.ssv.services.utils.LoggerManager.logException;
 
-public class ConnectionPool {
-    private static final int POOL_SIZE = 10;
-    private static BlockingQueue<Connection> connectionQueue;
-    private static String dbUrl;
-    private static String dbUser;
-    private static String dbPassword;
-    private static final String PROPERTIES_FILE = "src/resources/database.properties";
 
+public class ConnectionPool {
+    private static BlockingQueue<EntityManager> entityManagerPool;
+    private static final int INITIAL_POOL_SIZE = 20;
+    private static EntityManagerFactory entityManagerFactory;
 
     static {
-        connectionQueue = new ArrayBlockingQueue<>(POOL_SIZE);
-        initializePool();
+        entityManagerPool = new ArrayBlockingQueue<>(INITIAL_POOL_SIZE);
+        try {
+            initializePool();
+        } catch (Exception e) {
+            logException(e);
+            throw new RuntimeException("Ошибка при инициализации пула EntityManager.", e);
+        }
     }
 
     private static void initializePool() {
-        Properties properties = new Properties();
-        try (FileInputStream fis = new FileInputStream(PROPERTIES_FILE)) {
-            properties.load(fis);
-        } catch (IOException e) {
-            e.printStackTrace();
-            logException(e);
-            throw new RuntimeException("Error loading properties file.");
-        }
-
-        dbUrl = properties.getProperty("db.url");
-        dbUser = properties.getProperty("db.user");
-        dbPassword = properties.getProperty("db.password");
-
-        for (int i = 0; i < POOL_SIZE; i++) {
+        entityManagerFactory = Persistence.createEntityManagerFactory("TourUnit");
+        for (int i = 0; i < INITIAL_POOL_SIZE; i++) {
             try {
-                Connection connection = DriverManager.getConnection(dbUrl, dbUser, dbPassword);
-                connectionQueue.offer(connection);
-            } catch (SQLException e) {
+                EntityManager entityManager = entityManagerFactory.createEntityManager();
+                entityManagerPool.add(entityManager);
+            } catch (Exception e) {
                 logException(e);
-                throw new RuntimeException("Error creating database connections.");
+                throw new RuntimeException("Ошибка при создании экземпляров EntityManager.", e);
             }
         }
     }
 
-    public static Connection getConnection() throws SQLException {
-        try {
-            return connectionQueue.take();
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            logException(e);
-            throw new SQLException("Interrupted while waiting for a connection.");
-        }
+    public static EntityManager getEntityManager() throws InterruptedException {
+        return entityManagerPool.take();
     }
 
-    public static void releaseConnection(Connection connection) {
-        connectionQueue.offer(connection);
+    public static boolean releaseEntityManager(EntityManager entityManager) {
+        if (entityManager != null) {
+            if (entityManager.isOpen()) entityManager.close();
+            return entityManagerPool.offer(entityManager);
+        }
+        return false;
+    }
+
+    public static void closeFactory() {
+        if (entityManagerFactory != null && entityManagerFactory.isOpen()) {
+            entityManagerFactory.close();
+        }
     }
 }
+

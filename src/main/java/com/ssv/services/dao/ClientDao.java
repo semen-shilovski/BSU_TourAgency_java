@@ -1,117 +1,133 @@
 package com.ssv.services.dao;
 
 import com.ssv.models.Client;
+import com.ssv.models.Client_;
 import com.ssv.models.interfaces.Dao;
-import org.hibernate.query.Query;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityTransaction;
+import jakarta.persistence.TypedQuery;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Root;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
-import static com.ssv.services.utils.HibernateConnectionPool.getSession;
-import static com.ssv.services.utils.HibernateConnectionPool.releaseSession;
+import static com.ssv.services.utils.ConnectionPool.getEntityManager;
+import static com.ssv.services.utils.ConnectionPool.releaseEntityManager;
 import static com.ssv.services.utils.LoggerManager.logException;
 
 public class ClientDao implements Dao<Client> {
-    private static final String SELECT_BY_ID = "Client.selectById";
-
-    private static final String SELECT_ALL_CLIENTS_SQL = "Client.selectAll";
-
-    private static final String DELETE_BY_NAME = "Client.deleteClientByName";
-
-    private static final String UPDATE_CLIENT_BY_NAME = "Client.updateClientByName";
+    private final Class<Client> entityClass = Client.class;
 
 
     @Override
     public Optional<Client> getById(Integer id) {
-        var session = getSession();
+        EntityManager em = null;
         try {
-            Query query = session.getNamedQuery(SELECT_BY_ID);
-            query.setParameter("id", id);
-            return Optional.of((Client) query.getSingleResult());
+            em = getEntityManager();
+            CriteriaBuilder cb = em.getCriteriaBuilder();
+            CriteriaQuery<Client> cq = cb.createQuery(entityClass);
+            Root<Client> root = cq.from(entityClass);
+
+            cq.select(root).where(cb.equal(root.get(Client_.id), id));
+            TypedQuery<Client> query = em.createQuery(cq);
+            return Optional.of(query.getSingleResult());
         } catch (Exception e) {
             logException(e);
         } finally {
-            releaseSession(session);
+            releaseEntityManager(em);
         }
         return Optional.empty();
     }
 
-    private Client mapClientFromResultSet(ResultSet resultSet) throws SQLException {
-        return Client.builder()
-                .id(resultSet.getInt("id"))
-                .name(resultSet.getString("name"))
-                .address(resultSet.getString("address"))
-                .phoneNumber(resultSet.getString("phonenumber"))
-                .build();
-    }
-
     @Override
     public List<Client> getAll() {
-        List<Client> entries = new ArrayList<>();
-        var session = getSession();
+        EntityManager em = null;
         try {
-            Query query = session.getNamedQuery(SELECT_ALL_CLIENTS_SQL);
-            return query.list();
+            em = getEntityManager();
+            CriteriaBuilder cb = em.getCriteriaBuilder();
+            CriteriaQuery<Client> cq = cb.createQuery(entityClass);
+            Root<Client> root = cq.from(entityClass);
+            cq.select(root);
+            TypedQuery<Client> query = em.createQuery(cq);
+            return query.getResultList();
         } catch (Exception e) {
             logException(e);
         } finally {
-            releaseSession(session);
+            releaseEntityManager(em);
         }
-        return entries;
+        return null;
     }
 
     @Override
     public void save(Client client) {
-        var session = getSession();
-        var tx = session.beginTransaction();
+        EntityManager em = null;
+        EntityTransaction tx = null;
         try {
-            session.persist(client);
+            em = getEntityManager();
+            tx = em.getTransaction();
+
+            tx.begin();
+
+            em.persist(client);
+
             tx.commit();
         } catch (Exception e) {
-            if (Objects.nonNull(tx)) tx.rollback();
+            if (tx != null && tx.isActive()) {
+                tx.rollback();
+            }
             logException(e);
         } finally {
-            releaseSession(session);
+            releaseEntityManager(em);
         }
     }
 
     @Override
     public void update(Client client) {
-        var session = getSession();
-        var tx = session.beginTransaction();
+        EntityManager em = null;
+        EntityTransaction tx = null;
         try {
-            Query query = session.getNamedQuery(UPDATE_CLIENT_BY_NAME);
-            query.setParameter("name", client.getName());
-            query.setParameter("phonenumber", client.getPhoneNumber());
-            query.setParameter("address", client.getAddress());
-            query.setParameter("nameEq", client.getName());
-            query.executeUpdate();
+            em = getEntityManager();
+            tx = em.getTransaction();
+
+            tx.begin();
+            Client client1 = em.find(Client.class, client.getId());
+            client1.setAddress(client1.getAddress());
+            client1.setName(client1.getName());
+            client1.setAddress(client1.getAddress());
+            em.merge(client1);
+
             tx.commit();
         } catch (Exception e) {
-            if (Objects.nonNull(tx)) tx.rollback();
+            if (tx != null && tx.isActive()) {
+                tx.rollback();
+            }
             logException(e);
         } finally {
-            releaseSession(session);
+            releaseEntityManager(em);
         }
     }
 
     @Override
     public void delete(Client client) {
-        var session = getSession();
-        var tx = session.beginTransaction();
+        EntityManager em = null;
+        EntityTransaction tx = null;
         try {
-            Query query = session.getNamedQuery(DELETE_BY_NAME);
-            query.executeUpdate();
+            em = getEntityManager();
+            tx = em.getTransaction();
+
+            tx.begin();
+            em.detach(client);
+
             tx.commit();
         } catch (Exception e) {
-            if (Objects.nonNull(tx)) tx.rollback();
+            if (tx != null && tx.isActive()) {
+                tx.rollback();
+            }
             logException(e);
         } finally {
-            releaseSession(session);
+            releaseEntityManager(em);
         }
     }
 }

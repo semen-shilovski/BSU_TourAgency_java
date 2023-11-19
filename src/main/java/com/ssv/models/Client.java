@@ -4,12 +4,6 @@ import jakarta.persistence.*;
 
 @Entity
 @Table(name = "client")
-@NamedQueries({
-        @NamedQuery(name = "Client.selectById", query = "select cl from Client cl where cl.id = :id"),
-        @NamedQuery(name = "Client.selectAll", query = "select cl from Client cl"),
-        @NamedQuery(name = "Client.deleteClientByName", query = "delete Client cl where cl.name = :name"),
-        @NamedQuery(name = "Client.updateClientByName", query = "update Client cl SET cl.name = :name, cl.phoneNumber = :phonenumber, cl.address = :address WHERE name = :nameEq")
-})
 public class Client {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -85,5 +79,21 @@ public class Client {
                 ", phoneNumber='" + phoneNumber + '\'' +
                 ", address='" + address + '\'' +
                 '}';
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
     }
 }

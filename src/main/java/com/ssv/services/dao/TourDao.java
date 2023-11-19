@@ -1,144 +1,155 @@
 package com.ssv.services.dao;
 
 
-import com.ssv.models.Client;
 import com.ssv.models.Tour;
-import com.ssv.models.TourAgent;
+import com.ssv.models.Tour_;
 import com.ssv.models.interfaces.Dao;
-import org.hibernate.query.Query;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityTransaction;
+import jakarta.persistence.TypedQuery;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Root;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
-import static com.ssv.services.utils.HibernateConnectionPool.getSession;
-import static com.ssv.services.utils.HibernateConnectionPool.releaseSession;
+import static com.ssv.services.utils.ConnectionPool.getEntityManager;
+import static com.ssv.services.utils.ConnectionPool.releaseEntityManager;
 import static com.ssv.services.utils.LoggerManager.logException;
 
 public class TourDao implements Dao<Tour> {
-    private static final String SELECT_ALL_TOURS_SQL = "Tour.selectAll";
-    private static final String SELECT_BY_NAME = "Tour.selectByName";
-    private static final String SELECT_BY_ID = "Tour.selectById";
-    private static final String DELETE_BY_NAME = "Tour.deleteTourByName";
-    private static final String UPDATE_TOUR_BY_NAME = "Tour.updateTourByName";
+    private final Class<Tour> entityClass = Tour.class;
 
 
     public Optional<Tour> getByName(String name) {
-        var session = getSession();
+        EntityManager em = null;
         try {
-            Query query = session.getNamedQuery(SELECT_BY_NAME);
-            query.setParameter("name", name);
-            return Optional.of((Tour) query.getSingleResult());
+            em = getEntityManager();
+            CriteriaBuilder cb = em.getCriteriaBuilder();
+            CriteriaQuery<Tour> cq = cb.createQuery(entityClass);
+            Root<Tour> root = cq.from(entityClass);
+
+            cq.select(root).where(cb.equal(root.get(Tour_.name), name));
+            TypedQuery<Tour> query = em.createQuery(cq);
+            return Optional.of(query.getSingleResult());
         } catch (Exception e) {
             logException(e);
         } finally {
-            releaseSession(session);
+            releaseEntityManager(em);
         }
         return Optional.empty();
     }
 
     @Override
     public Optional<Tour> getById(Integer id) {
-        var session = getSession();
+        EntityManager em = null;
         try {
-            Query query = session.getNamedQuery(SELECT_BY_ID);
-            query.setParameter("id", id);
-            return Optional.of((Tour) query.getSingleResult());
+            em = getEntityManager();
+            CriteriaBuilder cb = em.getCriteriaBuilder();
+            CriteriaQuery<Tour> cq = cb.createQuery(entityClass);
+            Root<Tour> root = cq.from(entityClass);
+
+            cq.select(root).where(cb.equal(root.get(Tour_.id), id));
+            TypedQuery<Tour> query = em.createQuery(cq);
+            return Optional.of(query.getSingleResult());
         } catch (Exception e) {
             logException(e);
         } finally {
-            releaseSession(session);
+            releaseEntityManager(em);
         }
         return Optional.empty();
     }
 
     @Override
     public List<Tour> getAll() {
-        List<Tour> entries = new ArrayList<>();
-        var session = getSession();
+        EntityManager em = null;
         try {
-            Query query = session.getNamedQuery(SELECT_ALL_TOURS_SQL);
-            return query.list();
+            em = getEntityManager();
+            CriteriaBuilder cb = em.getCriteriaBuilder();
+            CriteriaQuery<Tour> cq = cb.createQuery(entityClass);
+            Root<Tour> root = cq.from(entityClass);
+            cq.select(root);
+            TypedQuery<Tour> query = em.createQuery(cq);
+            return query.getResultList();
         } catch (Exception e) {
             logException(e);
         } finally {
-            releaseSession(session);
+            releaseEntityManager(em);
         }
-        return entries;
+        return null;
     }
-
-    private Tour mapTourFromResultSet(ResultSet resultSet) throws SQLException {
-        return new Tour.TourBuilder()
-                .name(resultSet.getString("name"))
-                .type(resultSet.getString("type"))
-                .price(resultSet.getDouble("price"))
-                .lastMinute(resultSet.getBoolean("is_last_minute"))
-                .discountForRegularCustomers(resultSet.getDouble("discount"))
-                .client(Client.builder()
-                        .id(resultSet.getInt("client_id"))
-                        .build())
-                .tourAgent(TourAgent.builder()
-                        .id(resultSet.getInt("tour_agent_id"))
-                        .build())
-                .build();
-    }
-
 
     @Override
     public void save(Tour tour) {
-        var session = getSession();
-        var tx = session.beginTransaction();
+        EntityManager em = null;
+        EntityTransaction tx = null;
         try {
-            session.persist(tour);
+            em = getEntityManager();
+            tx = em.getTransaction();
+
+            tx.begin();
+
+            em.persist(tour);
+
             tx.commit();
         } catch (Exception e) {
-            if (Objects.nonNull(tx)) tx.rollback();
+            if (tx != null && tx.isActive()) {
+                tx.rollback();
+            }
             logException(e);
         } finally {
-            releaseSession(session);
+            releaseEntityManager(em);
         }
     }
 
     @Override
     public void update(Tour tour) {
-        var session = getSession();
-        var tx = session.beginTransaction();
+        EntityManager em = null;
+        EntityTransaction tx = null;
         try {
-            Query query = session.getNamedQuery(UPDATE_TOUR_BY_NAME);
-            query.setParameter("name", tour.getName());
-            query.setParameter("type", tour.getType());
-            query.setParameter("price", tour.getPrice());
-            query.setParameter("isLastMinute", tour.isLastMinute());
-            query.setParameter("discount", tour.getDiscountForRegularCustomers());
-            query.setParameter("clientId", tour.getClient().getId());
-            query.setParameter("tourAgentId", tour.getTourAgent().getId());
-            query.setParameter("nameEq", tour.getName());
-            query.executeUpdate();
+            em = getEntityManager();
+            tx = em.getTransaction();
+
+            tx.begin();
+            Tour tour1 = em.find(Tour.class, tour.getName());
+            tour1.setName(tour.getName());
+            tour1.setType(tour.getType());
+            tour1.setPrice(tour.getPrice());
+            tour1.setLastMinute(tour.isLastMinute());
+            tour1.setDiscountForRegularCustomers(tour.getDiscountForRegularCustomers());
+            em.merge(tour1);
+
             tx.commit();
         } catch (Exception e) {
-            if (Objects.nonNull(tx)) tx.rollback();
+            if (tx != null && tx.isActive()) {
+                tx.rollback();
+            }
             logException(e);
         } finally {
-            releaseSession(session);
+            releaseEntityManager(em);
         }
     }
 
     @Override
     public void delete(Tour tour) {
-        var session = getSession();
-        var tx = session.beginTransaction();
+        EntityManager em = null;
+        EntityTransaction tx = null;
         try {
-            Query query = session.getNamedQuery(DELETE_BY_NAME);
-            query.executeUpdate();
+            em = getEntityManager();
+            tx = em.getTransaction();
+
+            tx.begin();
+            em.detach(tour);
+
             tx.commit();
         } catch (Exception e) {
-            if (Objects.nonNull(tx)) tx.rollback();
+            if (tx != null && tx.isActive()) {
+                tx.rollback();
+            }
             logException(e);
         } finally {
-            releaseSession(session);
+            releaseEntityManager(em);
         }
     }
 }

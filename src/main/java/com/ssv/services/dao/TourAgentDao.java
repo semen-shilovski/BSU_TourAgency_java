@@ -2,113 +2,131 @@ package com.ssv.services.dao;
 
 
 import com.ssv.models.TourAgent;
+import com.ssv.models.TourAgent_;
 import com.ssv.models.interfaces.Dao;
-import org.hibernate.query.Query;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityTransaction;
+import jakarta.persistence.TypedQuery;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Root;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
-import static com.ssv.services.utils.HibernateConnectionPool.getSession;
-import static com.ssv.services.utils.HibernateConnectionPool.releaseSession;
+import static com.ssv.services.utils.ConnectionPool.getEntityManager;
+import static com.ssv.services.utils.ConnectionPool.releaseEntityManager;
 import static com.ssv.services.utils.LoggerManager.logException;
 
 public class TourAgentDao implements Dao<TourAgent> {
-
-    private static final String SELECT_BY_ID = "TourAgent.selectById";
-    private static final String SELECT_ALL_TOUR_AGENT_SQL = "TourAgent.selectAll";
-    private static final String DELETE_BY_NAME = "TourAgent.deleteTourAgentByName";
-    private static final String UPDATE_TOUR_AGENT_BY_NAME = "TourAgent.updateTourAgentByName";
+    private final Class<TourAgent> entityClass = TourAgent.class;
 
     @Override
     public Optional<TourAgent> getById(Integer id) {
-        var session = getSession();
+        EntityManager em = null;
         try {
-            Query query = session.getNamedQuery(SELECT_BY_ID);
-            query.setParameter("id", id);
-            return Optional.of((TourAgent) query.getSingleResult());
+            em = getEntityManager();
+            CriteriaBuilder cb = em.getCriteriaBuilder();
+            CriteriaQuery<TourAgent> cq = cb.createQuery(entityClass);
+            Root<TourAgent> root = cq.from(entityClass);
+
+            cq.select(root).where(cb.equal(root.get(TourAgent_.id), id));
+            TypedQuery<TourAgent> query = em.createQuery(cq);
+            return Optional.of(query.getSingleResult());
         } catch (Exception e) {
             logException(e);
         } finally {
-            releaseSession(session);
+            releaseEntityManager(em);
         }
         return Optional.empty();
     }
 
-    private TourAgent mapTourAgentFromResultSet(ResultSet resultSet) throws SQLException {
-        return TourAgent.builder()
-                .id(resultSet.getInt("id"))
-                .name(resultSet.getString("name"))
-                .phoneNumber(resultSet.getString("phonenumber"))
-                .build();
-    }
-
-
     @Override
     public List<TourAgent> getAll() {
-        List<TourAgent> entries = new ArrayList<>();
-        var session = getSession();
+        EntityManager em = null;
         try {
-            Query query = session.getNamedQuery(SELECT_ALL_TOUR_AGENT_SQL);
-            return query.list();
+            em = getEntityManager();
+            CriteriaBuilder cb = em.getCriteriaBuilder();
+            CriteriaQuery<TourAgent> cq = cb.createQuery(entityClass);
+            Root<TourAgent> root = cq.from(entityClass);
+            cq.select(root);
+            TypedQuery<TourAgent> query = em.createQuery(cq);
+            return query.getResultList();
         } catch (Exception e) {
             logException(e);
         } finally {
-            releaseSession(session);
+            releaseEntityManager(em);
         }
-        return entries;
+        return null;
     }
 
     @Override
     public void save(TourAgent tourAgent) {
-        var session = getSession();
-        var tx = session.beginTransaction();
+        EntityManager em = null;
+        EntityTransaction tx = null;
         try {
-            session.persist(tourAgent);
+            em = getEntityManager();
+            tx = em.getTransaction();
+
+            tx.begin();
+
+            em.persist(tourAgent);
+
             tx.commit();
         } catch (Exception e) {
-            if (Objects.nonNull(tx)) tx.rollback();
+            if (tx != null && tx.isActive()) {
+                tx.rollback();
+            }
             logException(e);
         } finally {
-            releaseSession(session);
+            releaseEntityManager(em);
         }
     }
 
     @Override
     public void update(TourAgent tourAgent) {
-        var session = getSession();
-        var tx = session.beginTransaction();
+        EntityManager em = null;
+        EntityTransaction tx = null;
         try {
-            Query query = session.getNamedQuery(UPDATE_TOUR_AGENT_BY_NAME);
-            query.setParameter("name", tourAgent.getName());
-            query.setParameter("phonenumber", tourAgent.getPhoneNumber());
-            query.setParameter("nameEq", tourAgent.getName());
-            query.executeUpdate();
+            em = getEntityManager();
+            tx = em.getTransaction();
+
+            tx.begin();
+            TourAgent tourAgent1 = em.find(TourAgent.class, tourAgent.getId());
+            tourAgent1.setName(tourAgent.getName());
+            tourAgent1.setPhoneNumber(tourAgent.getPhoneNumber());
+            em.merge(tourAgent1);
+
             tx.commit();
         } catch (Exception e) {
-            if (Objects.nonNull(tx)) tx.rollback();
+            if (tx != null && tx.isActive()) {
+                tx.rollback();
+            }
             logException(e);
         } finally {
-            releaseSession(session);
+            releaseEntityManager(em);
         }
     }
 
     @Override
     public void delete(TourAgent tourAgent) {
-        var session = getSession();
-        var tx = session.beginTransaction();
+        EntityManager em = null;
+        EntityTransaction tx = null;
         try {
-            Query query = session.getNamedQuery(DELETE_BY_NAME);
-            query.executeUpdate();
+            em = getEntityManager();
+            tx = em.getTransaction();
+
+            tx.begin();
+            em.detach(tourAgent);
+
             tx.commit();
         } catch (Exception e) {
-            if (Objects.nonNull(tx)) tx.rollback();
+            if (tx != null && tx.isActive()) {
+                tx.rollback();
+            }
             logException(e);
         } finally {
-            releaseSession(session);
+            releaseEntityManager(em);
         }
     }
 }

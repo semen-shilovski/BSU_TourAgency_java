@@ -17,9 +17,9 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.hibernate</groupId>
-            <artifactId>hibernate-core</artifactId>
-            <version>6.1.7.Final</version>
+            <groupId>org.eclipse.persistence</groupId>
+            <artifactId>eclipselink</artifactId>
+            <version>4.0.1</version>
         </dependency>
 
         <dependency>
