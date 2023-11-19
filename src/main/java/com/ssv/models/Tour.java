@@ -103,9 +103,11 @@ public class Tour {
         private double price;
         private boolean isLastMinute;
         private double discountForRegularCustomers;
-        @OneToOne(mappedBy = "tour")
+        @OneToOne(cascade = CascadeType.ALL)
+        @JoinColumn(name = "tour_id", nullable = false)
         private Client client;
-        @OneToOne(mappedBy = "tour")
+        @OneToOne(cascade = CascadeType.ALL)
+        @JoinColumn(name = "tour_agent_id", nullable = false)
         private TourAgent tourAgent;
 
         public TourBuilder name(String name) {

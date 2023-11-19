@@ -13,8 +13,7 @@ public class TourAgent {
     @Column(name = "phoneNumber")
     String phoneNumber;
 
-    @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "tour_id", nullable = false)
+    @OneToOne(mappedBy = "tourAgent")
     Tour tour;
 
     public Integer getId() {

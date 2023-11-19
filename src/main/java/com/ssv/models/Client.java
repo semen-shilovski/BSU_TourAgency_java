@@ -14,8 +14,7 @@ public class Client {
     String phoneNumber;
     @Column(name = "address")
     String address;
-    @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "tour_id", nullable = false)
+    @OneToOne(mappedBy = "client")
     Tour tour;
 
     public String getName() {
