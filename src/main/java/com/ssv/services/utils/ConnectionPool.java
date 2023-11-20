@@ -7,6 +7,7 @@ import jakarta.persistence.Persistence;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
+import static com.ssv.services.utils.Logger.logger;
 import static com.ssv.services.utils.LoggerManager.logException;
 
 
@@ -20,6 +21,7 @@ public class ConnectionPool {
         try {
             initializePool();
         } catch (Exception e) {
+            logger.error(e);
             logException(e);
             throw new RuntimeException("Ошибка при инициализации пула EntityManager.", e);
         }
@@ -32,6 +34,7 @@ public class ConnectionPool {
                 EntityManager entityManager = entityManagerFactory.createEntityManager();
                 entityManagerPool.add(entityManager);
             } catch (Exception e) {
+                logger.error(e);
                 logException(e);
                 throw new RuntimeException("Ошибка при создании экземпляров EntityManager.", e);
             }

@@ -15,6 +15,7 @@ import java.util.Optional;
 
 import static com.ssv.services.utils.ConnectionPool.getEntityManager;
 import static com.ssv.services.utils.ConnectionPool.releaseEntityManager;
+import static com.ssv.services.utils.Logger.logger;
 import static com.ssv.services.utils.LoggerManager.logException;
 
 public class ClientDao implements Dao<Client> {
@@ -34,6 +35,7 @@ public class ClientDao implements Dao<Client> {
             TypedQuery<Client> query = em.createQuery(cq);
             return Optional.of(query.getSingleResult());
         } catch (Exception e) {
+            logger.error(e);
             logException(e);
         } finally {
             releaseEntityManager(em);
@@ -53,6 +55,7 @@ public class ClientDao implements Dao<Client> {
             TypedQuery<Client> query = em.createQuery(cq);
             return query.getResultList();
         } catch (Exception e) {
+            logger.error(e);
             logException(e);
         } finally {
             releaseEntityManager(em);
@@ -77,6 +80,7 @@ public class ClientDao implements Dao<Client> {
             if (tx != null && tx.isActive()) {
                 tx.rollback();
             }
+            logger.error(e);
             logException(e);
         } finally {
             releaseEntityManager(em);
@@ -103,6 +107,7 @@ public class ClientDao implements Dao<Client> {
             if (tx != null && tx.isActive()) {
                 tx.rollback();
             }
+            logger.error(e);
             logException(e);
         } finally {
             releaseEntityManager(em);
@@ -125,6 +130,7 @@ public class ClientDao implements Dao<Client> {
             if (tx != null && tx.isActive()) {
                 tx.rollback();
             }
+            logger.error(e);
             logException(e);
         } finally {
             releaseEntityManager(em);

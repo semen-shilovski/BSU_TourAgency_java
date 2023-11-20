@@ -10,9 +10,13 @@ import java.util.Map;
 import java.util.Scanner;
 
 import static com.ssv.services.utils.ConnectionPool.closeFactory;
+import static com.ssv.services.utils.Logger.logger;
+
 
 public class Main {
     public static void main(String[] args) {
+        logger.info("Start Tour Agency Service");
+
         try {
             TravelAgencyService travelAgencyService = new TravelAgencyService();
 
@@ -53,6 +57,7 @@ public class Main {
                 }
             }
         } finally {
+            logger.info("End project and close EntityManager Factory");
             closeFactory();
         }
     }
