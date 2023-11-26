@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Тур-Агентство"</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <link rel="stylesheet" type="text/css" media="all" href="../../../css/tourism.css" th:href="@{/css/tourism.css}" />
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #eaeff2;
+            margin: 0;
+            padding: 0;
+        }
+        h1 {
+            background-color: #1e90ff;
+            color: white;
+            text-align: center;
+            padding: 10px 0;
+        }
+        table {
+            width: 80%;
+            margin-left: auto;
+            margin-right: auto;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        tr:hover {
+            background-color: #ddd;
+        }
+        th {
+            background-color: #1e90ff;
+            color: white;
+        }
+        a {
+            display: block;
+            width: fit-content;
+            margin: 20px auto;
+            padding: 10px 20px;
+            background-color: #1e90ff;
+            color: white;
+            text-decoration: none;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Список Тур-Агентов</h1>
+
+<table>
+    <tr>
+        <th>ID</th>
+        <th>Имя</th>
+        <th>Телефон</th>
+    </tr>
+    <tr th:each="tg : ${tourAgents}">
+        <td th:text="${tg.getId()}">Название Тура</td>
+        <td th:text="${tg.getName()}">Место Назначения</td>
+        <td th:text="${tg.getPhoneNumber()}">Длительность</td>
+    </tr>
+</table>
+
+<p>
+    <a href="../welcome" th:href="@{/}">Вернуться на Главную</a>
+</p>
+
+</body>
+</html>

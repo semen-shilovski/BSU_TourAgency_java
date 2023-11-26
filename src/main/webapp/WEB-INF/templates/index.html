@@ -1,0 +1,123 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Тур-Агентство"</title>
+    <meta charset="UTF-8">
+    <meta name="description" content="Организация и бронирование туров по всему миру">
+
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #eaeff2;
+            margin: 0;
+            padding: 0;
+            color: #333;
+        }
+
+        header {
+            background-color: #1e90ff;
+            color: white;
+            padding: 20px 0;
+            text-align: center;
+        }
+
+        h1 {
+            margin: 0;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        ul li {
+            margin: 10px;
+            padding: 5px;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        input[type="text"] {
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            width: 80%;
+        }
+
+        button {
+            background-color: #1e90ff;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            text-transform: uppercase;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #1565c0;
+        }
+
+        section {
+            padding: 20px;
+            margin: 20px;
+        }
+
+        h2 {
+            color: #1e90ff;
+        }
+
+        p {
+            line-height: 1.6;
+        }
+
+        ul li a {
+            display: inline-block;
+            background-color: #1e90ff;
+            color: white;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 5px;
+            text-decoration: none;
+            transition: background-color 0.3s ease;
+        }
+
+        ul li a:hover {
+            background-color: #1565c0;
+        }
+
+        header h1 {
+            text-align: left;
+            margin-left: 20px;
+            font-size: 2em;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+    </style>
+</head>
+<body>
+<header>
+    <h1>Туристическое агентство</h1>
+</header>
+<ul>
+    <li><a href="/client/getAllClients">Получение всех клиентов</a></li>
+    <li><a href="/tourAgents/getAllTourAgents">Получение всех тур-агентов</a></li>
+    <li><a href="/tours/getAllTours">Доступные туры</a></li>
+</ul>
+<section>
+    <h2>О Нашем Агентстве</h2>
+    <p>Туристическое агентство "Путешествуй Легко" предлагает широкий спектр туристических услуг, включая организацию
+        индивидуальных и групповых туров, бронирование отелей и авиабилетов, а также экскурсионные программы по всему
+        миру. Наша миссия - сделать ваши путешествия максимально комфортными и незабываемыми.</p>
+
+    <p>Мы тщательно подбираем туры и экскурсии, чтобы удовлетворить запросы самых взыскательных клиентов. На нашем сайте
+        вы можете ознакомиться с актуальными предложениями, узнать подробности о направлениях и легко забронировать тур,
+        который подойдет именно вам.</p>
+</section>
+</body>
+</html>
