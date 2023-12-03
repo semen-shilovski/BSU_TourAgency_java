@@ -14,6 +14,9 @@ public class HomeController implements IController {
     @Override
     public void process(IWebExchange webExchange, ITemplateEngine templateEngine, Writer writer, final HttpServletRequest request, final HttpServletResponse response) throws Exception {
         WebContext ctx = new WebContext(webExchange, webExchange.getLocale());
+        if (!ctx.getExchange().getRequest().getRequestPath().equals("/home")) {
+            response.sendRedirect("/home");
+        }
         User u = (User) request.getSession(true).getAttribute("user");
 
         if (!u.getRole().equals(UserRole.GUEST)) {
