@@ -1,4 +1,4 @@
-package com.ssv.services.utils;
+package com.ssv.services.utils.log;
 
 import org.apache.logging.log4j.LogManager;
 

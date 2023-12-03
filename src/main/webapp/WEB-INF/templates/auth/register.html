@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Регистрация - Тур-Агентство</title>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #eaeff2;
+            margin: 0;
+            padding: 0;
+            color: #333;
+        }
+
+        header {
+            background-color: #1e90ff;
+            color: white;
+            padding: 20px 0;
+            text-align: center;
+        }
+
+        h1 {
+            margin: 0;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 50px;
+        }
+
+        input[type="text"], input[type="password"] {
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            width: 80%;
+        }
+
+        button {
+            background-color: #1e90ff;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            text-transform: uppercase;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #1565c0;
+        }
+
+        section {
+            padding: 20px;
+            margin: 20px;
+        }
+
+        h2 {
+            color: #1e90ff;
+            text-align: center;
+        }
+
+        p {
+            line-height: 1.6;
+            text-align: center;
+        }
+
+        a {
+            color: #1e90ff;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        a:hover {
+            color: #1565c0;
+        }
+    </style>
+</head>
+<body>
+<header>
+    <h1>Туристическое агентство - Регистрация</h1>
+</header>
+<section>
+    <form action="register" method="post">
+        <h2>Регистрация</h2>
+        <input type="text" name="username" placeholder="Логин">
+        <input type="password" name="password" placeholder="Пароль">
+        <button type="submit">Зарегистрироваться</button>
+        <p>Уже зарегистрированы? <a href="authPage">Войти</a></p>
+    </form>
+</section>
+</body>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const form = document.querySelector("form");
+        form.addEventListener("submit", function (event) {
+            const username = document.querySelector('input[name="username"]').value.trim();
+            const password = document.querySelector('input[name="password"]').value.trim();
+
+            if (username === "" || password === "") {
+                alert("Пожалуйста, заполните все поля.");
+                event.preventDefault();
+            }
+        });
+    });
+</script>
+</html>

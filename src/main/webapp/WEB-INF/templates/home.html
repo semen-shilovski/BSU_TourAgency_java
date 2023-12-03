@@ -98,16 +98,62 @@
             font-size: 2em;
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
         }
+
+        .username {
+            font-weight: bold;
+            color: #ff5722;
+            background-color: #e0e0e0;
+            padding: 5px 10px;
+            border-radius: 4px;
+            box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
+            margin-left: 5px;
+        }
+
+        .auth-form {
+            display: inline-block;
+            border: 1px solid #ddd;
+            background-color: white;
+            padding: 10px;
+            margin-right: 10px;
+            border-radius: 5px;
+        }
+
+        .auth-button {
+            background-color: #1e90ff;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            text-transform: uppercase;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: background-color 0.3s ease;
+        }
+
+        .auth-button:hover {
+            background-color: #1565c0;
+        }
     </style>
 </head>
 <body>
 <header>
     <h1>Туристическое агентство</h1>
+    <p>Добро пожаловать, <span class="username" th:text="${username}">User</span>!</p>
+    <div class="auth-buttons">
+        <form action="/authPage" method="get" class="auth-form">
+            <input type="submit" value="Войти" class="auth-button"/>
+        </form>
+        <form action="/registerPage" method="get" class="auth-form">
+            <input type="submit" value="Зарегистрироваться" class="auth-button"/>
+        </form>
+        <form action="/logout" method="post" class="auth-form">
+            <input type="submit" value="Выйти" class="auth-button"/>
+        </form>
+    </div>
 </header>
 <ul>
-    <li><a href="/client/getAllClients">Получение всех клиентов</a></li>
-    <li><a href="/tourAgents/getAllTourAgents">Получение всех тур-агентов</a></li>
-    <li><a href="/tours/getAllTours">Доступные туры</a></li>
+    <li th:if="${role == 'ADMIN'}"><a href="/client/getAllClients">Получение всех клиентов</a></li>
+    <li th:if="${role == 'ADMIN'}"><a href="/tourAgents/getAllTourAgents">Получение всех тур-агентов</a></li>
+    <li th:if="${role == 'ADMIN' or role == 'USER'}"><a href="/tours/getAllTours">Доступные туры</a></li>
 </ul>
 <section>
     <h2>О Нашем Агентстве</h2>

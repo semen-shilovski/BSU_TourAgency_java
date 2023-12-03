@@ -4,6 +4,8 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+import java.util.Arrays;
+
 public class CookieManager {
     public static void addLastVisitToCookie(HttpServletRequest request, HttpServletResponse response) {
         var session = request.getSession(true);
@@ -28,5 +30,24 @@ public class CookieManager {
         visitCountCookie.setMaxAge(60 * 60 * 24 * 365); // 365 days
         response.addCookie(visitCountCookie);
         session.setAttribute("visitCount", visitCount);
+    }
+
+    public static void addCookieToResponse(HttpServletResponse response, String cookieName, String cookieValue) {
+        Cookie newCookie = new Cookie(cookieName, cookieValue);
+        response.addCookie(newCookie);
+    }
+
+    public static void clearCookie(HttpServletResponse response, String cookieName) {
+        Cookie newCookie = new Cookie(cookieName, null);
+        response.addCookie(newCookie);
+    }
+
+    public static String getCookieValueFromRequest(HttpServletRequest request, String cookieName) {
+        var cookieValue = Arrays.stream(request.getCookies())
+                .filter(cookie -> cookie.getName().equals(cookieName))
+                .findFirst()
+                .map(Cookie::getValue)
+                .orElse(null);
+        return cookieValue;
     }
 }

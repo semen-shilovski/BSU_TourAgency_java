@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Авторизация - Тур-Агентство</title>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #eaeff2;
+            margin: 0;
+            padding: 0;
+            color: #333;
+        }
+
+        header {
+            background-color: #1e90ff;
+            color: white;
+            padding: 20px 0;
+            text-align: center;
+        }
+
+        h1 {
+            margin: 0;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 50px;
+        }
+
+        input[type="text"], input[type="password"] {
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            width: 80%;
+        }
+
+        button {
+            background-color: #1e90ff;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            text-transform: uppercase;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #1565c0;
+        }
+
+        section {
+            padding: 20px;
+            margin: 20px;
+        }
+
+        h2 {
+            color: #1e90ff;
+            text-align: center;
+        }
+
+        p {
+            line-height: 1.6;
+            text-align: center;
+        }
+
+        a {
+            color: #1e90ff;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        a:hover {
+            color: #1565c0;
+        }
+    </style>
+</head>
+<body>
+<header>
+    <h1>Туристическое агентство - Авторизация</h1>
+</header>
+<section>
+    <form action="auth" method="post">
+        <h2>Авторизация</h2>
+        <input type="text" name="username" placeholder="Логин">
+        <input type="password" name="password" placeholder="Пароль">
+        <button type="submit">Войти</button>
+        <p>Еще не зарегистрированы? <a href="registerPage">Зарегистрироваться</a></p>
+    </form>
+</section>
+</body>
+</html>

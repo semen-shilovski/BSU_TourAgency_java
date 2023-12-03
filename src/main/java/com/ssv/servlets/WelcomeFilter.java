@@ -1,9 +1,8 @@
 package com.ssv.servlets;
 
-import com.ssv.controllers.HomeController;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.annotation.WebServlet;
-import jakarta.servlet.http.HttpServlet;
+import com.ssv.services.auth.AuthenticateService;
+import jakarta.servlet.*;
+import jakarta.servlet.annotation.WebFilter;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.thymeleaf.ITemplateEngine;
@@ -15,28 +14,37 @@ import org.thymeleaf.web.IWebRequest;
 import org.thymeleaf.web.servlet.IServletWebExchange;
 import org.thymeleaf.web.servlet.JakartaServletWebApplication;
 
+import java.io.IOException;
 import java.io.Writer;
-import java.util.Objects;
 
 import static com.ssv.services.cookie.CookieManager.addCountOfVisitToCookie;
 import static com.ssv.services.cookie.CookieManager.addLastVisitToCookie;
 import static com.ssv.servlets.ControllerMappings.resolveControllerForRequest;
 
-@WebServlet(urlPatterns = "/*")
-public class DispatcherServlet extends HttpServlet {
-    private static final long serialVersionUID = 1L;
+@WebFilter(urlPatterns = "/*")
+public class WelcomeFilter implements Filter {
     private JakartaServletWebApplication application;
     private ITemplateEngine templateEngine;
+    private AuthenticateService authenticateService;
+
+    @Override
+    public void init(FilterConfig filterConfig) {
+
+        this.application =
+                JakartaServletWebApplication.buildApplication(filterConfig.getServletContext());
+
+        this.templateEngine = buildTemplateEngine(this.application);
+        this.authenticateService = new AuthenticateService();
+    }
 
 
     @Override
-    public void init() {
-        this.application =
-                JakartaServletWebApplication.buildApplication(getServletContext());
-
-        this.templateEngine = buildTemplateEngine(this.application);
+    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
+            throws IOException, ServletException {
+        if (!process((HttpServletRequest) request, (HttpServletResponse) response)) {
+            chain.doFilter(request, response);
+        }
     }
-
 
     private ITemplateEngine buildTemplateEngine(final IWebApplication application) {
         final WebApplicationTemplateResolver templateResolver = new WebApplicationTemplateResolver(application);
@@ -53,14 +61,12 @@ public class DispatcherServlet extends HttpServlet {
         return templateEngine;
     }
 
-    @Override
-    public void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException {
-        doGet(request, response);
-    }
-
-    @Override
-    public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException {
-        if (isStaticResource(request.getRequestURI())) return;
+    private boolean process(final HttpServletRequest request, final HttpServletResponse response)
+            throws ServletException {
+        if (isStaticResource(request.getRequestURI())) return false;
+        var user = authenticateService.validateAndGetAuthUser(request, response);
+        request.getSession(true).setAttribute("user", user);
+        System.out.println(user.toString());
         response.setContentType("text/html;charset=UTF-8");
         addCountOfVisitToCookie(request, response);
         addLastVisitToCookie(request, response);
@@ -69,12 +75,16 @@ public class DispatcherServlet extends HttpServlet {
             final IWebRequest webRequest = webExchange.getRequest();
             final Writer writer = response.getWriter();
             var controller = resolveControllerForRequest(webRequest);
-            if (Objects.isNull(controller)) {
-                controller = new HomeController();
-            }
+
             controller.process(webExchange, templateEngine, writer, request, response);
+            return true;
         } catch (Exception e) {
-            e.printStackTrace();
+            try {
+                response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            } catch (final IOException ignored) {
+
+            }
+            throw new ServletException(e);
         }
     }
 
@@ -84,5 +94,5 @@ public class DispatcherServlet extends HttpServlet {
         }
         return false;
     }
+
 }
-  

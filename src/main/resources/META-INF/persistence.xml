@@ -9,11 +9,13 @@
         <class>com.ssv.models.TourAgent</class>
         <class>com.ssv.models.Tour</class>
         <class>com.ssv.models.Client</class>
+        <class>com.ssv.models.auth.User</class>
         <properties>
             <property name="eclipselink.jdbc.driver" value="org.postgresql.Driver"/>
             <property name="eclipselink.jdbc.user" value="postgres"/>
             <property name="eclipselink.jdbc.password" value="password"/>
             <property name="eclipselink.jdbc.url" value="jdbc:postgresql://localhost:5432/db"/>
+            <property name="eclipselink.cache.shared.default" value="false"/>
 
             <property name="eclipselink.ddl-generation" value="none"/>
             <property name="eclipselink.logging.level" value="SEVERE"/>

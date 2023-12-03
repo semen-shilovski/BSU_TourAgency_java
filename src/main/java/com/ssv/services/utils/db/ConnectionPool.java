@@ -1,4 +1,4 @@
-package com.ssv.services.utils;
+package com.ssv.services.utils.db;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
@@ -7,8 +7,8 @@ import jakarta.persistence.Persistence;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
-import static com.ssv.services.utils.Logger.logger;
-import static com.ssv.services.utils.LoggerManager.logException;
+import static com.ssv.services.utils.log.Logger.logger;
+import static com.ssv.services.utils.log.LoggerManager.logException;
 
 
 public class ConnectionPool {
@@ -47,7 +47,10 @@ public class ConnectionPool {
 
     public static boolean releaseEntityManager(EntityManager entityManager) {
         if (entityManager != null) {
-            if (entityManager.isOpen()) entityManager.close();
+            if (entityManager.isOpen()) {
+                entityManager.close();
+            }
+            entityManager = entityManagerFactory.createEntityManager();
             return entityManagerPool.offer(entityManager);
         }
         return false;

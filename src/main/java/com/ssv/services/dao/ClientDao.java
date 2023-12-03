@@ -13,10 +13,10 @@ import jakarta.persistence.criteria.Root;
 import java.util.List;
 import java.util.Optional;
 
-import static com.ssv.services.utils.ConnectionPool.getEntityManager;
-import static com.ssv.services.utils.ConnectionPool.releaseEntityManager;
-import static com.ssv.services.utils.Logger.logger;
-import static com.ssv.services.utils.LoggerManager.logException;
+import static com.ssv.services.utils.db.ConnectionPool.getEntityManager;
+import static com.ssv.services.utils.db.ConnectionPool.releaseEntityManager;
+import static com.ssv.services.utils.log.Logger.logger;
+import static com.ssv.services.utils.log.LoggerManager.logException;
 
 public class ClientDao implements Dao<Client> {
     private final Class<Client> entityClass = Client.class;
