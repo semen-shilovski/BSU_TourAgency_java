@@ -16,16 +16,23 @@ public class RegisterController implements IController {
     @Override
     public void process(IWebExchange webExchange, ITemplateEngine templateEngine, Writer writer, final HttpServletRequest request, final HttpServletResponse response) throws Exception {
         WebContext ctx = new WebContext(webExchange, webExchange.getLocale());
-        System.out.println(ctx.getExchange().getRequest().getMethod());
+
         if (ctx.getExchange().getRequest().getRequestPath().equals("/registerPage")) {
             templateEngine.process("auth/register", ctx, writer);
         } else if (ctx.getExchange().getRequest().getRequestPath().equals("/register") && ctx.getExchange().getRequest().getMethod().equals("POST")) {
             var username = webExchange.getRequest().getParameterValue("username");
             var pass = webExchange.getRequest().getParameterValue("password");
-            userService.createUser(username, pass, UserRole.USER);
-            response.sendRedirect("/register-success");
+            if (userService.createUser(username, pass, UserRole.USER)) {
+                response.sendRedirect("/register-success");
+            } else {
+                response.sendRedirect("/register-error");
+            }
         } else if (ctx.getExchange().getRequest().getRequestPath().equals("/register-success") && ctx.getExchange().getRequest().getMethod().equals("GET")) {
-            templateEngine.process("auth/register-success", ctx, writer);
+            ctx.setVariable("info", "good");
+            templateEngine.process("auth/register-info", ctx, writer);
+        } else if (ctx.getExchange().getRequest().getRequestPath().equals("/register-error") && ctx.getExchange().getRequest().getMethod().equals("GET")) {
+            ctx.setVariable("info", "bad");
+            templateEngine.process("auth/register-info", ctx, writer);
         }
     }
 }

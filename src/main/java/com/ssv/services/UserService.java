@@ -13,11 +13,14 @@ public class UserService {
         return userDao.getByUsername(username).orElse(null);
     }
 
-    public void createUser(String username, String password, UserRole userRole) {
-        userDao.save(User.builder()
-                .username(username)
-                .password(hashPassword(password))
-                .role(userRole)
-                .build());
+    public boolean createUser(String username, String password, UserRole userRole) {
+        if (userDao.getByUsername(username).isEmpty()) {
+            return userDao.saveWithResult(User.builder()
+                    .username(username)
+                    .password(hashPassword(password))
+                    .role(userRole)
+                    .build());
+        }
+        return false;
     }
 }

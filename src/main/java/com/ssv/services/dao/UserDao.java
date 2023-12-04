@@ -108,6 +108,31 @@ public class UserDao implements Dao<User> {
         }
     }
 
+    public boolean saveWithResult(User user) {
+        EntityManager em = null;
+        EntityTransaction tx = null;
+        try {
+            em = getEntityManager();
+            tx = em.getTransaction();
+
+            tx.begin();
+
+            em.persist(user);
+
+            tx.commit();
+            return true;
+        } catch (Exception e) {
+            if (tx != null && tx.isActive()) {
+                tx.rollback();
+            }
+            logger.error(e);
+            logException(e);
+            return false;
+        } finally {
+            releaseEntityManager(em);
+        }
+    }
+
     @Override
     public void update(User user) {
         //no realisation
