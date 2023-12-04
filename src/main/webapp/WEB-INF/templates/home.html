@@ -139,10 +139,10 @@
     <h1>Туристическое агентство</h1>
     <p>Добро пожаловать, <span class="username" th:text="${username}">User</span>!</p>
     <div class="auth-buttons">
-        <form action="/authPage" method="get" class="auth-form">
+        <form th:if="${role == 'GUEST'}" action="/authPage" method="get" class="auth-form">
             <input type="submit" value="Войти" class="auth-button"/>
         </form>
-        <form action="/registerPage" method="get" class="auth-form">
+        <form th:if="${role == 'GUEST'}" action="/registerPage" method="get" class="auth-form">
             <input type="submit" value="Зарегистрироваться" class="auth-button"/>
         </form>
         <form action="/logout" method="post" class="auth-form">
